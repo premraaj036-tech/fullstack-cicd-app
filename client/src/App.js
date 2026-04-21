@@ -4,152 +4,165 @@ import './App.css';
 function App() {
   const [todos, setTodos] = useState([]);
   const [newTodo, setNewTodo] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [dueDate, setDueDate] = useState('');
+  const [priority, setPriority] = useState('Medium');
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState('');
+  const [filter, setFilter] = useState('All');
 
-  const API_URL = 'https://jsonplaceholder.typicode.com/todos';
-
+  // LocalStorage se load karo
   useEffect(() => {
-    fetchTodos();
+    const saved = localStorage.getItem('todos');
+    if (saved) setTodos(JSON.parse(saved));
   }, []);
 
-  const fetchTodos = async () => {
-    try {
-      const response = await fetch(`${API_URL}/todos`);
-      const data = await response.json();
-      setTodos(data);
-    } catch (error) {
-      console.error('Error fetching todos:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // LocalStorage mein save karo
+  useEffect(() => {
+    localStorage.setItem('todos', JSON.stringify(todos));
+  }, [todos]);
 
-  const addTodo = async (e) => {
+  const addTodo = (e) => {
     e.preventDefault();
     if (!newTodo.trim()) return;
 
-    try {
-      const response = await fetch(`${API_URL}/todos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: newTodo })
-      });
-      const todo = await response.json();
-      setTodos([todo, ...todos]);
-      setNewTodo('');
-    } catch (error) {
-      console.error('Error adding todo:', error);
-    }
+    const todo = {
+      id: Date.now(),
+      title: newTodo,
+      completed: false,
+      dueDate: dueDate || 'No date',
+      priority: priority,
+      createdAt: new Date().toLocaleString()
+    };
+    setTodos([...todos, todo]);
+    setNewTodo('');
+    setDueDate('');
+    setPriority('Medium');
   };
 
-  const toggleTodo = async (id, completed) => {
-    try {
-      const response = await fetch(`${API_URL}/todos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ completed: !completed })
-      });
-      const updatedTodo = await response.json();
-      setTodos(todos.map(todo => 
-        todo._id === id ? updatedTodo : todo
-      ));
-    } catch (error) {
-      console.error('Error updating todo:', error);
-    }
+  const toggleTodo = (id) => {
+    setTodos(todos.map(todo =>
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
   };
 
-  const deleteTodo = async (id) => {
-    try {
-      await fetch(`${API_URL}/todos/${id}`, { method: 'DELETE' });
-      setTodos(todos.filter(todo => todo._id !== id));
-    } catch (error) {
-      console.error('Error deleting todo:', error);
-    }
+  const deleteTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
+  };
+
+  const startEdit = (todo) => {
+    setEditingId(todo.id);
+    setEditText(todo.title);
+  };
+
+  const saveEdit = (id) => {
+    setTodos(todos.map(todo =>
+      todo.id === id ? { ...todo, title: editText } : todo
+    ));
+    setEditingId(null);
+  };
+
+  const sendReminder = (todo) => {
+    alert(`📧 Reminder: "${todo.title}" is due on ${todo.dueDate} (Priority: ${todo.priority})\n\n[This would send an actual email using Nodemailer in production]`);
+  };
+
+  const filteredTodos = todos.filter(todo => {
+    if (filter === 'Active') return !todo.completed;
+    if (filter === 'Completed') return todo.completed;
+    return true;
+  });
+
+  const stats = {
+    total: todos.length,
+    completed: todos.filter(t => t.completed).length,
+    pending: todos.filter(t => !t.completed).length
   };
 
   return (
     <div className="App">
       <header className="App-header">
-        <h1>🚀 Todo App - CI/CD Pipeline</h1>
-        <p>Backend: http://localhost:5000 ✅ Connected</p>
+        <h1>🚀 Advanced Todo App</h1>
+        <p>CI/CD Enabled | Full Stack | MongoDB Ready</p>
       </header>
-      
-      <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-        <form onSubmit={addTodo} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
-          <input
-            type="text"
-            value={newTodo}
-            onChange={(e) => setNewTodo(e.target.value)}
-            placeholder="Add a new todo..."
-            style={{
-              flex: 1,
-              padding: '10px',
-              fontSize: '16px',
-              border: '1px solid #ccc',
-              borderRadius: '4px'
-            }}
-          />
-          <button 
-            type="submit"
-            style={{
-              padding: '10px 20px',
-              fontSize: '16px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Add
-          </button>
-        </form>
 
-        {loading ? (
-          <p>Loading todos...</p>
-        ) : (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {todos.map(todo => (
-              <li 
-                key={todo._id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  padding: '10px',
-                  borderBottom: '1px solid #eee'
-                }}
-              >
+      <div className="stats">
+        <span>📊 Total: {stats.total}</span>
+        <span>✅ Done: {stats.completed}</span>
+        <span>⏳ Pending: {stats.pending}</span>
+      </div>
+
+      <div className="filter-buttons">
+        <button onClick={() => setFilter('All')} className={filter === 'All' ? 'active' : ''}>All</button>
+        <button onClick={() => setFilter('Active')} className={filter === 'Active' ? 'active' : ''}>Active</button>
+        <button onClick={() => setFilter('Completed')} className={filter === 'Completed' ? 'active' : ''}>Completed</button>
+      </div>
+
+      <form onSubmit={addTodo} className="todo-form">
+        <input
+          type="text"
+          value={newTodo}
+          onChange={(e) => setNewTodo(e.target.value)}
+          placeholder="Add a new todo..."
+        />
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+        />
+        <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+          <option>High</option>
+          <option>Medium</option>
+          <option>Low</option>
+        </select>
+        <button type="submit">Add Todo</button>
+      </form>
+
+      <ul className="todo-list">
+        {filteredTodos.map(todo => (
+          <li key={todo.id} className={`priority-${todo.priority.toLowerCase()}`}>
+            <input
+              type="checkbox"
+              checked={todo.completed}
+              onChange={() => toggleTodo(todo.id)}
+            />
+            
+            {editingId === todo.id ? (
+              <>
                 <input
-                  type="checkbox"
-                  checked={todo.completed}
-                  onChange={() => toggleTodo(todo._id, todo.completed)}
+                  type="text"
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  onBlur={() => saveEdit(todo.id)}
+                  onKeyPress={(e) => e.key === 'Enter' && saveEdit(todo.id)}
+                  autoFocus
                 />
-                <span style={{
-                  flex: 1,
-                  textDecoration: todo.completed ? 'line-through' : 'none',
-                  color: todo.completed ? '#888' : '#000'
-                }}>
+                <button onClick={() => saveEdit(todo.id)}>Save</button>
+              </>
+            ) : (
+              <>
+                <span className={todo.completed ? 'completed' : ''}>
                   {todo.title}
                 </span>
-                <button
-                  onClick={() => deleteTodo(todo._id)}
-                  style={{
-                    padding: '5px 10px',
-                    backgroundColor: '#dc3545',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Delete
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+                <span className="due-date">📅 {todo.dueDate}</span>
+                <span className={`priority-badge priority-${todo.priority.toLowerCase()}`}>
+                  {todo.priority}
+                </span>
+              </>
+            )}
+            
+            <div className="actions">
+              {editingId !== todo.id && (
+                <>
+                  <button onClick={() => startEdit(todo)} className="edit-btn">✏️</button>
+                  <button onClick={() => sendReminder(todo)} className="email-btn">📧</button>
+                </>
+              )}
+              <button onClick={() => deleteTodo(todo.id)} className="delete-btn">🗑️</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      {todos.length === 0 && <p className="empty">No todos yet. Add one above! 👆</p>}
     </div>
   );
 }
