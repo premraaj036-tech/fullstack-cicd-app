@@ -1,38 +1,28 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
+.App { max-width: 800px; margin: 0 auto; padding: 20px; }
+.App-header { text-align: center; margin-bottom: 20px; }
+.stats { display: flex; gap: 20px; justify-content: center; margin: 20px 0; padding: 15px; background: #f5f5f5; border-radius: 8px; }
+.stats span { font-weight: bold; }
+.filter-buttons { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+.filter-buttons button { padding: 8px 16px; border: none; background: #e0e0e0; cursor: pointer; border-radius: 4px; }
+.filter-buttons button.active { background: #007bff; color: white; }
+.todo-form { display: flex; gap: 10px; margin-bottom: 30px; }
+.todo-form input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+.todo-form select { padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+.todo-form button { padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+.todo-list { list-style: none; padding: 0; }
+.todo-list li { display: flex; align-items: center; gap: 10px; padding: 15px; margin-bottom: 10px; background: white; border: 1px solid #eee; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.todo-list li.priority-high { border-left: 4px solid #dc3545; }
+.todo-list li.priority-medium { border-left: 4px solid #ffc107; }
+.todo-list li.priority-low { border-left: 4px solid #28a745; }
+.todo-list span.completed { text-decoration: line-through; color: #999; }
+.todo-list .due-date { font-size: 12px; color: #666; margin-left: auto; }
+.priority-badge { padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+.priority-high { background: #f8d7da; color: #721c24; }
+.priority-medium { background: #fff3cd; color: #856404; }
+.priority-low { background: #d4edda; color: #155724; }
+.actions { display: flex; gap: 5px; }
+.edit-btn, .email-btn, .delete-btn { padding: 5px 10px; border: none; cursor: pointer; border-radius: 4px; }
+.edit-btn { background: #ffc107; }
+.email-btn { background: #17a2b8; color: white; }
+.delete-btn { background: #dc3545; color: white; }
+.empty { text-align: center; color: #999; padding: 40px; }
