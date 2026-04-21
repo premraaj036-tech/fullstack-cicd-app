@@ -6,7 +6,7 @@ function App() {
   const [newTodo, setNewTodo] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'https://todo-backend-gij4.onrender.com/api';
+  const API_URL = 'https://jsonplaceholder.typicode.com/todos';
 
   useEffect(() => {
     fetchTodos();
