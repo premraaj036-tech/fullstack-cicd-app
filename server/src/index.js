@@ -49,7 +49,8 @@ app.delete('/api/todos/:id', async (req, res) => {
 });
 
 // MongoDB Connection
-mongoose.connect('mongodb://localhost:27017/todoapp')
+// MongoDB Connection
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/todoapp')
   .then(() => console.log('✅ MongoDB connected'))
   .catch(err => console.error('❌ MongoDB error:', err));
 
