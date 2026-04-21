@@ -1,5 +1,4 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -10,49 +9,44 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// Todo Schema
-const todoSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  completed: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now }
-});
-const Todo = mongoose.model('Todo', todoSchema);
+// In-memory data store (MongoDB ki jagah)
+let todos = [];
+let nextId = 1;
 
 // Routes
 app.get('/health', (req, res) => {
   res.json({ status: 'OK' });
 });
 
-app.get('/api/todos', async (req, res) => {
-  const todos = await Todo.find().sort({ createdAt: -1 });
+app.get('/api/todos', (req, res) => {
   res.json(todos);
 });
 
-app.post('/api/todos', async (req, res) => {
-  const todo = new Todo({ title: req.body.title });
-  await todo.save();
+app.post('/api/todos', (req, res) => {
+  const todo = { 
+    _id: String(nextId++), 
+    title: req.body.title, 
+    completed: false,
+    createdAt: new Date()
+  };
+  todos.push(todo);
   res.json(todo);
 });
 
-app.put('/api/todos/:id', async (req, res) => {
-  const todo = await Todo.findByIdAndUpdate(
-    req.params.id,
-    { completed: req.body.completed },
-    { new: true }
-  );
-  res.json(todo);
+app.put('/api/todos/:id', (req, res) => {
+  const todo = todos.find(t => t._id === req.params.id);
+  if (todo) {
+    todo.completed = req.body.completed;
+    res.json(todo);
+  } else {
+    res.status(404).json({ error: 'Not found' });
+  }
 });
 
-app.delete('/api/todos/:id', async (req, res) => {
-  await Todo.findByIdAndDelete(req.params.id);
+app.delete('/api/todos/:id', (req, res) => {
+  todos = todos.filter(t => t._id !== req.params.id);
   res.json({ message: 'Deleted' });
 });
-
-// MongoDB Connection
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/todoapp')
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch(err => console.error('❌ MongoDB error:', err));
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
